@@ -3,7 +3,7 @@ The 15-puzzle coded in C using CSFML with an ida* solver to test the additive pa
 The 87 grouping uses too much memory and time for no reason since the 663 grouping finds the solution with no visible delay. Should work on Windows PCs.
 
 # Controls:
-M - Change Mode (Click <=> Drag)
+M - Change Mode (Click <=> Drag)  
 ↑ - Speed Up  
 ↓ - Speed Down  
 F5 - Save Board  

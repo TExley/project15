@@ -387,12 +387,12 @@ int run(sfRenderWindow* window)
 	////////////////////////////////////////////
 
 	int board[BOARD_LENGTH];
-	int recall[BOARD_LENGTH];
+	int recall[BOARD_LENGTH] = { 2, 3, 1, 0, 15, 13, 5, 7, 4, 8, 10, 6, 12, 14, 9, 11 };
 
 	for (int i = 0; i < BOARD_LENGTH; i++)
 	{
 		board[i] = i;
-		recall[i] = i;
+		//recall[i] = i;
 	}
 
 	/*//////////////////////////////////////////

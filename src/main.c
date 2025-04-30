@@ -18,6 +18,9 @@ const char BOARD_IMAGE_PATH[] = "res/board.png";
 const char TILESET_IMAGE_PATH[] = "res/tileset.png";
 
 int direction_values[NUMBER_DIRECTIONS] = { -4, -1, 1, 4 };
+// Visualize IDA* search
+// char ds[NUMBER_DIRECTIONS] = { 'U', 'L', 'R', 'D' };
+// char rev[80];
 
 Group* group555;
 Group* group663;
@@ -187,8 +190,32 @@ int search(Stack* path, int depth, int bound)
 
 	int total_distance = depth + node->data->distance;
 
+	/* Visualize IDA* search
+	printf("Moves {"); 
+	Node* curr = node;
+	
+	int size = 0;
+	while (curr->next_node != NULL)
+	{
+		rev[size] = ds[curr->data->last_move];
+		curr = curr->next_node;
+		size++;
+	}
+	for (int i = size - 1; i >= 0; i--)
+	{
+		printf("%c", rev[i]);
+	}
+	printf("}\t");
+	if (size < 8)
+		printf("\t");
+	printf("Depth %d\t\tHurristic %d\t\tTotal Distance %d", depth, node->data->distance, total_distance);
+	*/
 	if (total_distance > bound)
+	{
+		//printf("-\n");
 		return total_distance;
+	}
+	//printf("\n");
 
 	int min = INT_MAX;
 
@@ -322,6 +349,7 @@ Stack* idaStar(int board[BOARD_LENGTH])
 
 	while (TRUE)
 	{
+		//printf("\nBound: %d\n", bound);
 		int result = search(path, 0, bound);
 		if (result == FOUND)
 			return path;

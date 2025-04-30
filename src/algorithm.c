@@ -191,18 +191,15 @@ Group* aGroup_load(char* path)
 	/*	Read Map Data
 	/*//////////////////////////////////////////
 
-	int value, key, index;
-	for (int i = 0; i < group->length; i++)
+	int value, key, indexi, indexj;
+	while (fgets(line, MAX_READ_LENGTH, file))
 	{
-		for (int j = 0; j < hmPermuatation(BOARD_LENGTH, group->maps[i]->subset_length); j++)
-		{
-			fgets(line, MAX_READ_LENGTH, file);
-			next_token = NULL;
-			index = atoi(strtok_s(line, ",", &next_token));
-			key = atoi(strtok_s(NULL, ",", &next_token));
-			value = atoi(strtok_s(NULL, ",", &next_token));
-			hmHashMap_setMap(group->maps[i], index, key, value);
-		}
+		next_token = NULL;
+		indexi = atoi(strtok_s(line, ",", &next_token));
+		indexj = atoi(strtok_s(NULL, ",", &next_token));
+		key = atoi(strtok_s(NULL, ",", &next_token));
+		value = atoi(strtok_s(NULL, ",", &next_token));
+		hmHashMap_setMap(group->maps[indexi], indexj, key, value);
 	}
 
 	fclose(file);
@@ -421,7 +418,7 @@ void aGroup_write(Group* group, char* path)
 			if (value != -1)
 			{
 				int key = hmHashMap_getKey(group->maps[i], j);
-				sprintf_s(line, MAX_READ_LENGTH, "%d,%d,%d\n", j, key, value);
+				sprintf_s(line, MAX_READ_LENGTH, "%d, %d,%d,%d\n", i, j, key, value);
 				fputs(line, file);
 			}
 		}

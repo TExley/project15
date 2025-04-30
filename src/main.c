@@ -467,12 +467,17 @@ int run(sfRenderWindow* window)
 						printf("Found the fastest solution\n");
 						path = sStack_create();
 
+						int length = 0;
+
 						// Push every node except the last one
 						while (reverse_path->first_node->next_node != NULL)
 						{
 							Data* data = sStack_pop(reverse_path);
 							sStack_push(path, data);
+							length++;
 						}
+
+						printf("Fastest solution takes %d moves\n", length);
 
 						sStack_delete(reverse_path);
 

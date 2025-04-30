@@ -213,41 +213,29 @@ void aGroup_populateSingleMap(HashMap* map, int* subset, int dont_print)
 	/*	Ready Variables
 	/*//////////////////////////////////////////
 
-	size_t with_empty_size = (map->subset_length + 1) * sizeof(int);
+	size_t subset_size = map->subset_length * sizeof(int);
+	int* subset_cpy = (int*)malloc(subset_size);
 
-	int* subset_with_empty = (int*)malloc(with_empty_size);
-
-	if (subset_with_empty == NULL)
+	if (subset_cpy == NULL)
 		return;
 
-	memcpy(subset_with_empty, subset, with_empty_size - sizeof(int));
-	subset_with_empty[map->subset_length] = 15;
+	memcpy(subset_cpy, subset, subset_size);
 
 	Data* data = (Data*)malloc(sizeof(Data));
 	if (data == NULL)
 	{
-		free(subset_with_empty);
+		free(subset_cpy);
 		return;
 	}
 
-	data->group = subset_with_empty;
+	data->group = subset_cpy;
 	data->last_move = -1;
 	data->distance = 0;
 
 	Queue* queue = qQueue_create();
 	if (queue == NULL)
 	{
-		free(subset_with_empty);
-		free(data);
-		return;
-	}
-
-	HashMap* map_with_empty = hmHashMap_create(map->subset_length + 1, FALSE);
-
-	if (map_with_empty == NULL)
-	{
-		qQueue_delete(queue);
-		free(subset_with_empty);
+		free(subset_cpy);
 		free(data);
 		return;
 	}
@@ -263,8 +251,6 @@ void aGroup_populateSingleMap(HashMap* map, int* subset, int dont_print)
 	int count = 0;
 	count += hmHashMap_hashValue(map, data->group, data->distance);
 
-	int solution_flag;
-
 	int total = map->length / (SCARCITY_MULTIPLIER);
 	int one_percent = total / 100;
 	int last_count = 0;
@@ -277,79 +263,78 @@ void aGroup_populateSingleMap(HashMap* map, int* subset, int dont_print)
 			printf("%d%%\n", (int)(100 * ((float)count / total)));
 		}
 
-		// Loops through moves
-		for (int i = 0; i < NUMBER_DIRECTIONS; i++)
+		// Loop through tiles
+		for (int k = 0; k < map->subset_length; k++)
 		{
-			if (data->last_move != i)
+			// Loops through moves
+			for (int i = 0; i < NUMBER_DIRECTIONS; i++)
 			{
-				// Skip invalid moves to the left and right
-				int row = data->group[map->subset_length] % NUMBER_DIRECTIONS;
-				if ((row == 0 && i == 1) || (row == 3 && i == 2))
+				if (data->last_move == i)
 					continue;
 
-				int switch_index = data->group[map->subset_length] + direction_values[i];
+				// Skip invalid moves to the left and right
+				int col = data->group[k] % NUMBER_DIRECTIONS;
+				if ((col == 0 && i == 1) || (col == 3 && i == 2))
+					continue;
 
-				// If valid move
-				if (switch_index >= 0 && switch_index < BOARD_LENGTH)
+				int switch_index = data->group[k] + direction_values[i];
+
+				// Skip invalid moves up and down
+				if (switch_index < 0 || switch_index >= BOARD_LENGTH)
+					continue;
+
+				// Skip if a different tile is there already
+				int occupied_flag = FALSE;
+				for (int j = 0; j < map->subset_length; j++)
+					if (data->group[j] == switch_index)
+					{
+						occupied_flag = TRUE;
+						break;
+					}
+
+				if (occupied_flag)
+					continue;
+						
+				// Create new data
+				int* new_group = (int*)malloc(subset_size);
+				if (new_group == NULL)
+				{
+					qQueue_delete(queue);
+					return;
+				}
+
+				memcpy(new_group, data->group, subset_size);
+
+				// Do the switch
+				new_group[k] = switch_index;
+
+				// If new move
+				if (hmHashMap_get(map, new_group) == -1)
 				{
 					// Create new data
-					int* new_group = (int*)malloc(with_empty_size);
-					if (new_group == NULL)
+					Data* new_data = (Data*)malloc(sizeof(Data));
+					if (new_data == NULL)
 					{
+						free(new_group);
 						qQueue_delete(queue);
-						hmHashMap_delete(map_with_empty);
 						return;
 					}
 
-					memcpy(new_group, data->group, with_empty_size);
+					new_data->group = new_group;
+					new_data->last_move = k * NUMBER_DIRECTIONS + NUMBER_DIRECTIONS_LESS_ONE - i;
+					new_data->distance = data->distance + 1;
 
-					solution_flag = FALSE;
-
-					// Do the switch
-					new_group[map->subset_length] = switch_index;
-					for (int j = 0; j < map->subset_length; j++)
-					{
-						if (data->group[j] == switch_index)
-						{
-							new_group[j] = data->group[map->subset_length];
-							solution_flag = TRUE;
-							break;
-						}
-					}
-
-					// If new move
-					if (hmHashMap_hashKey(map_with_empty, new_group))
-					{
-						// Create new data
-						Data* new_data = (Data*)malloc(sizeof(Data));
-						if (new_data == NULL)
-						{
-							free(new_group);
-							qQueue_delete(queue);
-							hmHashMap_delete(map_with_empty);
-							return;
-						}
-
-						new_data->group = new_group;
-						new_data->last_move = NUMBER_DIRECTIONS_LESS_ONE - i;
-						new_data->distance = data->distance + solution_flag;
-
-						if (solution_flag)
-							count += hmHashMap_hashValue(map, new_group, new_data->distance);
-							
-						qQueue_enqueue(queue, new_data);
-					}
-					else
-						free(new_group);
+					count += hmHashMap_hashValue(map, new_group, new_data->distance);
+					qQueue_enqueue(queue, new_data);
 				}
+				else
+					free(new_group);
 			}
 		}
 		free(data->group);
 		free(data);
 	}
-
 	qQueue_delete(queue);
-	hmHashMap_delete(map_with_empty);
 }
 
 void aGroup_populate(Group* group)

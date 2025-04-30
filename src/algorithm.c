@@ -207,7 +207,7 @@ Group* aGroup_load(char* path)
 	return group;
 }
 
-void aGroup_populateSingleMap(HashMap* map, int* subset)
+void aGroup_populateSingleMap(HashMap* map, int* subset, int dont_print)
 {
 	/*//////////////////////////////////////////
 	/*	Ready Variables
@@ -271,8 +271,7 @@ void aGroup_populateSingleMap(HashMap* map, int* subset)
 
 	while ((data = (Data*)qQueue_dequeue(queue)) != NULL)
 	{
-
-		if (count % one_percent == 0 && count != last_count)
+		if (!dont_print && count % one_percent == 0 && count != last_count)
 		{
 			last_count = count;
 			printf("%d%%\n", (int)(100 * ((float)count / total)));
@@ -359,7 +358,7 @@ void aGroup_populate(Group* group)
 
 #pragma omp parallel for
 	for (i = 0; i < group->length; i++)
-		aGroup_populateSingleMap(group->maps[i], group->groups[i]);
+		aGroup_populateSingleMap(group->maps[i], group->groups[i], i);
 }
 
 int aGroup_heuristic(Group* group, int index_board[BOARD_LENGTH])

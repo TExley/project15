@@ -226,8 +226,8 @@ int search(Stack* path, int depth, int bound)
 		if (node->data->last_move != i)
 		{
 			// Skip invalid moves to the left and right
-			int row = node->data->group[BOARD_LAST_INDEX] % NUMBER_DIRECTIONS;
-			if ((row == 0 && i == 1) || (row == 3 && i == 2))
+			int col = node->data->group[BOARD_LAST_INDEX] % NUMBER_DIRECTIONS;
+			if ((col == 0 && i == 1) || (col == 3 && i == 2))
 				continue;
 
 			int switch_index = node->data->group[BOARD_LAST_INDEX] + direction_values[i];
